@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cinnamon Quality</title>
+
+    <!-- Bootstrap CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            background: linear-gradient(to right, #8e2de2, #4a00e0);
+            color: white;
+        }
+
+        .card {
+            border-radius: 20px;
+            padding: 20px;
+        }
+
+        .form-control {
+            border-radius: 10px;
+        }
+
+        .btn-custom {
+            background-color: #ff7b00;
+            color: white;
+            border-radius: 10px;
+        }
+
+        .btn-custom:hover {
+            background-color: #ff9500;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+
+            <div class="card shadow-lg">
+                <h3 class="text-center text-dark">🌿 Cinnamon Quality Prediction</h3>
+
+                <form method="POST">
+                    {% csrf_token %}
+
+                    <input class="form-control mt-3" name="moisture" placeholder="Moisture">
+                    <input class="form-control mt-3" name="ash" placeholder="Ash">
+                    <input class="form-control mt-3" name="volatile" placeholder="Volatile Oil">
+                    <input class="form-control mt-3" name="acid" placeholder="Acid Insoluble Ash">
+                    <input class="form-control mt-3" name="chromium" placeholder="Chromium">
+                    <input class="form-control mt-3" name="coumarin" placeholder="Coumarin">
+
+                    <button class="btn btn-custom w-100 mt-4">Predict</button>
+                </form>
+
+                <p class="text-danger text-center mt-3">{{ error }}</p>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

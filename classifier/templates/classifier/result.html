@@ -1,0 +1,196 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Prediction Result</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        body {
+            background: linear-gradient(to right, #a79d6b, #6875bc);
+            min-height: 100vh;
+        }
+
+        .card {
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+
+        .result-box {
+            font-size: 24px;
+            font-weight: bold;
+            padding: 12px;
+            border-radius: 10px;
+        }
+
+        .healthy {
+            background-color: #cbcab8;
+            color: #00695c;
+        }
+
+        .unhealthy {
+            background-color: #ff7675;
+            color: white;
+        }
+
+        .btn-back {
+            background-color: #2d3436;
+            color: white;
+        }
+
+        canvas {
+            background: white;
+            border-radius: 10px;
+            padding: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container mt-4">
+
+    <h3 class="text-center mb-4">📊 Prediction Result</h3>
+
+    <!-- RESULT -->
+    <div class="text-center mb-3">
+        <div class="result-box {% if final == 'Healthy' %}healthy{% else %}unhealthy{% endif %}">
+            🌿 Final Prediction: {{ final }}
+        </div>
+    </div>
+
+    <!-- EXPLANATION -->
+    <div class="text-center mt-3">
+        {% if final == "Unhealthy" %}
+            <p class="fw-bold text-danger">
+                ⚠️ High moisture / humidity detected → Disease risk is high
+            </p>
+        {% else %}
+            <p class="fw-bold text-success">
+                ✅ All parameters are within normal range → Leaf is healthy
+            </p>
+        {% endif %}
+    </div>
+
+    <!-- ACCURACY LIST -->
+    {% if accuracy %}
+    <h5 class="text-center mt-4">📈 Model Accuracy</h5>
+    <ul class="list-group mb-3">
+        {% for key, value in accuracy.items %}
+            <li class="list-group-item d-flex justify-content-between">
+                {{ key }}
+                <span class="badge bg-primary">{{ value }}</span>
+            </li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+    <!-- BEST ALGORITHM -->
+    <h5 class="text-center mt-3">
+        🏆 Best Algorithm: <span class="text-warning">{{ best_model }}</span>
+    </h5>
+
+    <!-- GRAPH + MATRIX -->
+    <div class="row mt-3">
+
+        <div class="col-md-6 mb-3">
+            <div class="card p-2">
+                <h6 class="text-center">📊 Accuracy Graph</h6>
+                <img src="{% static 'accuracy.png' %}" class="img-fluid">
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-3">
+            <div class="card p-2">
+                <h6 class="text-center">📉 Confusion Matrix</h6>
+                <img src="{% static 'confusion_matrix.png' %}" class="img-fluid">
+            </div>
+        </div>
+
+    </div>
+
+    <!-- INPUT GRAPH -->
+    <div class="card p-3 mt-3">
+        <h5 class="text-center">📈 Banana Input Analysis (Normalized)</h5>
+        <canvas id="lineChart"></canvas>
+    </div>
+
+    <!-- BACK BUTTON -->
+    <a href="/" class="btn btn-back w-100 mt-3">⬅ Back</a>
+
+</div>
+
+<script>
+    const labels = [
+        {% if norm_inputs %}
+            {% for key, value in norm_inputs.items %}
+                "{{ key }}",
+            {% endfor %}
+        {% endif %}
+    ];
+
+    const values = [
+        {% if norm_inputs %}
+            {% for key, value in norm_inputs.items %}
+                {{ value }},
+            {% endfor %}
+        {% endif %}
+    ];
+
+    const threshold = 0.6;
+
+    if (labels.length > 0) {
+        new Chart(document.getElementById('lineChart'), {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Normalized Inputs',
+                        data: values,
+                        borderColor: 'blue',
+                        backgroundColor: 'lightblue',
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 6,
+                        pointBackgroundColor: values.map(v => v > threshold ? 'red' : 'green')
+                    },
+                    {
+                        label: 'Threshold',
+                        data: Array(values.length).fill(threshold),
+                        borderColor: 'orange',
+                        borderWidth: 2,
+                        fill: false,
+                        pointRadius: 0
+                    }
+                ]
+            },
+            options: {
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(ctx) {
+                                let v = ctx.raw;
+                                return v > threshold
+                                    ? ctx.label + ": " + v + " (Abnormal)"
+                                    : ctx.label + ": " + v + " (Normal)";
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 1
+                    }
+                }
+            }
+        });
+    }
+</script>
+
+</body>
+</html>

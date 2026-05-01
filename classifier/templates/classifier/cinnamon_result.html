@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Result</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        body {
+            background: linear-gradient(to right, #11998e, #38ef7d);
+            color: white;
+            text-align: center;
+        }
+
+        .box {
+            margin-top: 60px;
+            padding: 30px;
+            border-radius: 20px;
+            background: rgba(0,0,0,0.3);
+        }
+
+        .btn-custom {
+            background-color: #ff7b00;
+            color: white;
+            border-radius: 10px;
+        }
+
+        canvas {
+            background: white;
+            border-radius: 10px;
+            padding: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <!-- RESULT -->
+    <div class="box">
+        <h2>🌟 Prediction Result</h2>
+        <h3 class="text-warning">{{ result }}</h3>
+
+        {% if result == "High" %}
+        <p>🌿 High quality cinnamon with strong properties.</p>
+        {% elif result == "Medium" %}
+        <p>⚖️ Medium quality cinnamon.</p>
+        {% else %}
+        <p>⚠️ Low quality cinnamon.</p>
+        {% endif %}
+    </div>
+
+    <!-- 📊 ACCURACY LIST -->
+    {% if accuracy %}
+    <div class="box mt-4">
+        <h4>📈 Model Accuracy</h4>
+        <ul class="list-group">
+            {% for key, value in accuracy.items %}
+                <li class="list-group-item d-flex justify-content-between">
+                    {{ key }}
+                    <span class="badge bg-primary">{{ value }}</span>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    <!-- 🏆 BEST ALGORITHM -->
+    <div class="box mt-4">
+        <h4>🏆 Best Algorithm</h4>
+        <h5 class="text-warning">{{ best_model }}</h5>
+    </div>
+
+    <!-- GRAPH -->
+    <div class="box mt-4">
+        <h4>📊 Input Analysis (Normalized)</h4>
+        <canvas id="chart"></canvas>
+    </div>
+
+    <!-- BACK BUTTON -->
+    <div class="mt-3">
+        <a href="/" class="btn btn-custom">Back</a>
+    </div>
+
+</div>
+
+<script>
+    const labels = [
+        {% for key, value in norm_inputs.items %}
+            "{{ key }}",
+        {% endfor %}
+    ];
+
+    const values = [
+        {% for key, value in norm_inputs.items %}
+            {{ value }},
+        {% endfor %}
+    ];
+
+    const threshold = 0.6;
+
+    new Chart(document.getElementById('chart'), {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Normalized Values',
+                    data: values,
+                    backgroundColor: values.map(v => v > threshold ? 'red' : 'green')
+                },
+                {
+                    label: 'Threshold',
+                    data: Array(values.length).fill(threshold),
+                    type: 'line',
+                    borderColor: 'yellow',
+                    borderWidth: 2,
+                    fill: false
+                }
+            ]
+        },
+        options: {
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(ctx) {
+                            let v = ctx.raw;
+                            return v > threshold ? v + " (High)" : v + " (Low)";
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 1
+                }
+            }
+        }
+    });
+</script>
+
+</body>
+</html>
